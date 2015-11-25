@@ -1,0 +1,78 @@
+import org.newdawn.slick.SlickException;
+import java.lang.Math;
+
+/** Present all the drones.*/
+public class Drone extends Enemy{
+	/**drone's image*/
+	private static final String DRONEIMG= Game.ASSETS_PATH + "/units/drone.png";
+	/**Drone's full shield number.*/
+	private static final int DRONE_FULL_SHIELD = 16;
+	/** In the moving algorthim, need all these variable to calculate the drone's movement*/
+	private double dist_total;
+	private double dist_x;
+	private double dist_y;
+	private double amount;
+
+	/**Create a drone object
+	 * @param x The drone's x position.
+	 * @param y The drone's y position.
+	 * */	
+	public Drone(double x,double y)
+		throws SlickException{
+			super(x,y,DRONEIMG,DRONE_FULL_SHIELD);		
+		}
+	
+	/** Update drone's position.
+	 * @param delta Time passed since last frame (milliseconds).
+	 * @param world The world the drone is on (to check blocking).
+	 * @param cam The current camera (to check blocking).
+	 * @param player The player (to call player's class method).
+	 * */
+	public void update(int delta, World world, Camera cam,Player player){
+		double x = this.getX();
+        double y = this.getY();
+        //Use the moving algorithms.
+        if (x > cam.getLeft() && x < cam.getRight() - 1 && y > cam.getTop() && y < cam.getBottom() - 1){        	
+        	dist_x= x-player.getX();
+        	dist_y= y-player.getY();
+        	dist_total=Math.sqrt(dist_x*dist_x + dist_y*dist_y);
+        	amount = (delta) * getSpeed();       	
+        	x-=(dist_x/dist_total)*(amount);
+        	y-=(dist_y/dist_total)*amount;
+        }
+        //Check collision with walls.
+        moveto(world, x, y);
+	}
+	
+	/** drone's moving speed.*/
+	private double getSpeed(){
+	        return 0.2;
+	}
+	 
+	 /** Collision with the wall, the same as the player.
+	 * @param world The world the drone is on (to check blocking).
+     * @param x New x coordinate.
+     * @param y New y coordinate.
+	  */
+    private void moveto(World world, double x, double y){
+        if (!world.terrainBlocks(x-halfWidth(), y+halfHeight()) && !world.terrainBlocks(x+halfWidth(), y-halfHeight()) && !world.terrainBlocks(x-halfWidth(), y-halfHeight()) && !world.terrainBlocks(x+halfWidth(), y+halfHeight())){
+            this.setX(x);
+            this.setY(y);
+        }
+
+        else if (!world.terrainBlocks(this.getX()-halfWidth(), y-halfHeight()) && !world.terrainBlocks(this.getX()+halfWidth(), y+halfHeight()) && !world.terrainBlocks(this.getX()+halfWidth(), y-halfHeight()) && !world.terrainBlocks(this.getX()-halfWidth(), y+halfHeight())){
+            this.setY(y);
+        }
+
+        else if (!world.terrainBlocks(x+halfWidth(), this.getY()-halfHeight()) && !world.terrainBlocks(x-halfWidth(), this.getY()-halfHeight()) && !world.terrainBlocks(x+halfWidth(), this.getY()+halfHeight()) && !world.terrainBlocks(x-halfWidth(), this.getY()+halfHeight())){
+            this.setX(x);
+        }
+    }
+
+    /** When collided with the player, need to change player's stats.
+	 * @param player Need player to call the methods in player class.
+	 * */
+	public void changestat(Player player) {
+		player.change_dronedamage();		
+	}
+}

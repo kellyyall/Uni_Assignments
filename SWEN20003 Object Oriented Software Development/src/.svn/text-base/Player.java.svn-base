@@ -1,0 +1,282 @@
+/* SWEN20003 Object Oriented Software Development
+ * Space Game Engine (Sample Project)
+ * Author: Matt Giuca <mgiuca>
+ */
+
+import java.util.ArrayList;
+
+import org.newdawn.slick.Graphics;
+import org.newdawn.slick.Image;
+import org.newdawn.slick.SlickException;
+
+/** The ship which the player controls.
+ */
+public class Player extends Unit
+{
+    /** File path of the player's ship image file. */
+    private static final String IMAGE_FILE
+        = Game.ASSETS_PATH + "/units/player.png";
+
+    /** Image of the player's ship. */
+    private Image img;
+
+    /** The x coordinate of the player, relative to map (pixels). */
+    private double x;
+    /** The y coordinate of the player, relative to map (pixels). */
+    private double y;
+    
+    /** Set player's initial firepower to 0. */
+    public int playfire_number=0;
+    		
+    /** Add 40 Shield point when player pick up an shield item. */
+    private static final double ADDSHIELD = 40;
+    
+    /** The maximum firepower that the player can have is 3. */
+    private static final int MAX_FIREPOWER = 3;
+    
+    /** I assume there's an error on the map, since if I use half width
+     * and half height of my player image, player can't get through some 
+     * place on the map, so I just use halfwidth-1 and halfheight-1 instead.
+     */
+    private static final int ERROR_MAP = 1;
+   
+    /** Player can fire once every 300 milliseconds initially. */
+    private static final int INITIAL_FIRE_SPEED = 300;
+    /** Player's fire speed changed when player pick up an firepower item. */
+    private static final int CHANGE_SPEED = 80;
+       
+    /** Asteroid's damage is 12.*/
+	private static final int ASTEROID_DAMAGE = 12;
+	/** Drone's damage is 8.*/
+	private static final int DRONE_DAMAGE = 8;
+	/** Fighter's damage is 9.*/
+	private static final int FIGHTER_DAMAGE = 9;
+    
+    /** Set the initial cooldown to 0. */
+    private int cooldown = 0;
+    
+    /** Create a ArrayList to store all the missiles that have been created. */
+    ArrayList<Missile> arraymissile = new ArrayList<Missile>();
+      
+    /** Creates a new Player.
+     * @param x The player's start location (x, pixels).
+     * @param y The player's start location (y, pixels).
+     */
+    public Player(double x, double y)
+        throws SlickException
+    {
+    	super(x,y,IMAGE_FILE,100);
+        this.img = new Image(IMAGE_FILE);
+        this.x = x;
+        this.y = y;
+    }
+
+    /** The x coordinate of the player, relative to map (pixels). */
+    public double getX()
+    {
+        return x;
+    }
+
+    /** The y coordinate of the player, relative to map (pixels). */
+    public double getY()
+    {
+        return y;
+    }
+
+    /** Draw the Player to the screen at the correct place.
+     * @param g The current Graphics context.
+     * @param cam Camera used to render the current screen.
+     */
+    public void render(Graphics g, Camera cam)
+    {
+        // Calculate the player's on-screen location from the camera
+        int screen_x, screen_y;
+        screen_x = (int) (this.x - cam.getLeft());
+        screen_y = (int) (this.y - cam.getTop());     
+        img.drawCentered(screen_x, screen_y);
+
+        // Draw all the created missiles.
+        for(Missile m:arraymissile){
+        	m.render(g, cam);
+        }
+    }
+
+    /** Move the player automatically forwards, as well as (optionally) in a
+     * given direction. Prevents the player from moving onto blocking terrain,
+     * or outside of the screen (camera) bounds.
+     * @param world The world the player is on (to check blocking).
+     * @param cam The current camera (to check blocking).
+     * @param dir_x The player's movement in the x axis (-1, 0 or 1).
+     * @param dir_y The player's movement in the y axis (-1, 0 or 1).
+     * @param fire Check player's fire or not.
+     * @param delta Time passed since last frame (milliseconds).
+     * @throws SlickException 
+     */
+    public void update(World world, Camera cam, double dir_x, double dir_y,boolean fire,
+        int delta) throws SlickException
+    {
+        /* Calculate the amount to move in each direction, based on speed */
+        double amount = delta * getSpeed();
+        /* The new location */
+        double x = this.x + dir_x * amount;
+        double y = this.y + dir_y * amount;
+        if (!world.reachedTop())
+            y -= delta * getAutoSpeed();
+        // Check if the player is off the screen, and push back in
+        if (x < cam.getLeft())
+            x = cam.getLeft();
+        if (x > cam.getRight() - 1)
+            x = cam.getRight() - 1;
+        if (y-halfPlayerHeight() < cam.getTop())
+            y = cam.getTop()+halfPlayerHeight();
+        if (y+halfPlayerHeight() > cam.getBottom())
+            y = cam.getBottom()-halfPlayerHeight();
+        
+        moveto(world, x, y);
+        
+        //Player's cooldown timer.
+        if(fire){
+        	if(cooldown<=0){
+        		Missile addMissile = new Missile(x,y);
+        		world.addMissile(addMissile);
+        		cooldown=INITIAL_FIRE_SPEED-CHANGE_SPEED *playfire_number;
+        	} else {
+        		cooldown -= delta;
+        	}
+        }
+        
+        // Update all the missile that have been created.
+        for(Missile m:arraymissile){
+        	m.update(delta, world, cam);
+        } 
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    }
+    
+    /** Cooldown's getter and setter.*/
+    public int getCooldown() {
+		return cooldown;
+	}
+	public void setCooldown(int cooldown) {
+		this.cooldown = cooldown;
+	}
+
+    /** The number of pixels the player may move per millisecond. */
+    private double getSpeed()
+    {
+        return 0.4;
+    }
+
+    /** The number of pixels the player automatically moves per millisecond.
+     */
+    private double getAutoSpeed()
+    {
+        return 0.25;
+    }
+    
+    /** Maybe there's a little error on the map
+     *  Use halfwidth-1 instead of halfwidth.
+     *  */
+    public double halfPlayerWidth(){
+    	return img.getWidth()/2-ERROR_MAP ;    /** an error for the img ???*/
+    }
+    /** Maybe there's a little error on the map
+     *  Use halfheight-1 instead of halfheight.
+     *  */
+    public double halfPlayerHeight(){
+    	return img.getHeight()/2-ERROR_MAP;
+    }
+
+    /** Update the player's x and y coordinates.
+     * Prevents the player from moving onto blocking terrain.
+     * @param world The world the player is on (to check blocking).
+     * @param x New x coordinate.
+     * @param y New y coordinate.
+     */
+    private void moveto(World world, double x, double y)
+    {
+        // If the destination is not blocked by terrain, move there
+    
+        if (!world.terrainBlocks(x-halfPlayerWidth(), y+halfPlayerHeight()) && !world.terrainBlocks(x+halfPlayerWidth(), y-halfPlayerHeight()) && !world.terrainBlocks(x-halfPlayerWidth(), y-halfPlayerHeight()) && !world.terrainBlocks(x+halfPlayerWidth(), y+halfPlayerHeight()))
+        {
+            this.x = x;
+            this.y = y;
+        }
+        // Else: Try moving vertically only
+       else if (!world.terrainBlocks(this.x-halfPlayerWidth(), y-halfPlayerHeight()) && !world.terrainBlocks(this.x+halfPlayerWidth(), y+halfPlayerHeight()) && !world.terrainBlocks(this.x+halfPlayerWidth(), y-halfPlayerHeight()) && !world.terrainBlocks(this.x-halfPlayerWidth(), y+halfPlayerHeight()))
+        {
+            this.y = y;
+        }
+        // Else: Try moving horizontally only
+        else if (!world.terrainBlocks(x+halfPlayerWidth(), this.y-halfPlayerHeight()) && !world.terrainBlocks(x-halfPlayerWidth(), this.y-halfPlayerHeight()) && !world.terrainBlocks(x+halfPlayerWidth(), this.y+halfPlayerHeight()) && !world.terrainBlocks(x-halfPlayerWidth(), this.y+halfPlayerHeight()))
+        {
+            this.x = x;
+        }
+    }
+    
+    
+
+    /** When player pick up an shield item, player's shield and maxShield
+     * added by 40 points.
+     */
+	public void changeshield() {
+		shield+=ADDSHIELD;
+		maxShield+=ADDSHIELD;	
+	}
+	
+	/**When player pick up an firepower item, player's firepower added by 1.
+	 * And the maximum firepower player can have is 3.
+	 * */
+	public void changefirepower() {
+		if(playfire_number==MAX_FIREPOWER){
+			playfire_number=MAX_FIREPOWER;
+		}else{
+		playfire_number=playfire_number+1;				
+		}
+	}
+	
+	/**When player pick up an repair item, player's shield restores to its maxShield.*/
+	public void changerepair() {
+		shield= maxShield;	
+	}
+	
+	/** Get player's shield. */
+	public int getshield(){
+		return shield;
+	}
+	
+	/** get player's full shield. */
+	public int getfullshield(){
+		return maxShield;
+	}
+	
+	/** get player's firepower. */
+	public int getfire_number(){
+		return playfire_number;
+	}
+
+	public void changestat(Player player) {
+	}
+
+	/** When player touch a fighter, its shield cut down 9 points.*/
+	public void change_fighterdamage() {
+		shield-= FIGHTER_DAMAGE;		
+	}
+
+	/** When player touch a drone, its shield cut down 8 points.*/
+	public void change_dronedamage() {
+		shield-=DRONE_DAMAGE;		
+	}
+	/** When player touch a asteroid, its shield cut down 12 points.*/
+	public void change_asteroiddamage(){
+		shield-= ASTEROID_DAMAGE;
+	}	
+}
+

@@ -1,0 +1,85 @@
+import java.util.ArrayList;
+import org.newdawn.slick.SlickException;
+
+/** Present all the fighters. */
+public class Fighter extends Enemy {
+	
+    /** Fighter's image's path. */
+	private static final String FIGHTERIMG= Game.ASSETS_PATH + "/units/fighter.png";
+	/** Fighter's full shield number.*/
+	private static final int FIGHTER_FULL_SHIELD = 24;
+	/** Since the fighter's firepower is 0, so the fire speed is 300-80*0, is 300.*/
+	private static final int FIRE_SPEED = 300;
+	/** Set fighter's cooldown to 0.*/
+    private int cooldown=0;
+ 
+    /** Build a arrayList to store all the enemy missiles that have been created.*/
+    ArrayList<Missile> arraymissile = new ArrayList<Missile>();
+
+    /** Create a fighter object.
+     * @param x The fighter's x position.
+     * @param y The fighter's y position.
+     * @throws SlickException
+     */
+	public Fighter(double x,double y)
+		throws SlickException{
+            super(x,y,FIGHTERIMG,FIGHTER_FULL_SHIELD);		
+		}
+	
+	/** Update fighter's position, create missiles and set missiles' cooldown timer
+	 * @param delta Time passed since last frame (milliseconds).
+	 * @param world The world the fighter is on (to check blocking).
+	 * @param cam The current camera (to check blocking).
+	 * @param player The player (to call player's class method).
+	 * */
+	public void update(int delta, World world, Camera cam,Player player) throws SlickException{
+		
+		double x = this.getX();
+        double y = this.getY();       
+        if (x > cam.getLeft() && x < cam.getRight() - 1 && y > cam.getTop() && y < cam.getBottom() - 1){
+        	 y += (delta) * getSpeed();       	 
+        	// fighter's cooldown timer.
+         	if(cooldown<=0){
+            	EnemyMissile addMissile = new EnemyMissile(this.getX(),this.getY());
+            	world.addEnemyMissile(addMissile);
+            	cooldown = FIRE_SPEED;
+            	} else {
+            		cooldown -= delta;
+            	}
+         	//collision with the wall, the same as the player.
+         	moveto(world, x, y);
+        } 
+	}
+     
+	/** Fighter's moving downwards at the speed of 0.2*/
+	 private double getSpeed(){
+	        return 0.2;
+	    }
+	 
+    /** Check collison with the wall. 
+     * @param world The world the fighter is on (to check blocking).
+     * @param x New x coordinate.
+     * @param y New y coordinate.*/
+    private void moveto(World world, double x, double y){
+        if (!world.terrainBlocks(x-halfWidth()-1, y+halfHeight()-1) && !world.terrainBlocks(x+halfWidth()-1, y-halfHeight()-1) && !world.terrainBlocks(x-halfWidth()-1, y-halfHeight()-1) && !world.terrainBlocks(x+halfWidth()-1, y+halfHeight()-1)){
+            this.setX(x);
+            this.setY(y);
+        }
+
+       else if (!world.terrainBlocks(this.getX()-halfWidth()-1, y-halfHeight()-1) && !world.terrainBlocks(this.getX()+halfWidth()-1, y+halfHeight()-1) && !world.terrainBlocks(this.getX()+halfWidth()-1, y-halfHeight()-1) && !world.terrainBlocks(this.getX()-halfWidth()-1, y+halfHeight()-1)){
+            this.setY(y);
+        }
+
+        else if (!world.terrainBlocks(x+halfWidth()-1
+        		, this.getY()-halfHeight()-1) && !world.terrainBlocks(x-halfWidth()-1, this.getY()-halfHeight()-1) && !world.terrainBlocks(x+halfWidth()-1, this.getY()+halfHeight()-1) && !world.terrainBlocks(x-halfWidth()-1, this.getY()+halfHeight()-1)){
+            this.setX(x);
+        }
+    }
+
+	/** When collided with the player, need to change player's stats.
+	 * @param player Need player to call the methods in player class.
+	 * */
+	public void changestat(Player player) {
+		player.change_fighterdamage();
+	}
+}

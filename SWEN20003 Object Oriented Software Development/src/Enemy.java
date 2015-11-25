@@ -1,0 +1,16 @@
+import org.newdawn.slick.SlickException;
+
+/** Present all the enemies.*/
+public abstract class Enemy extends Unit {
+	/**Create an enemy object.
+	 *@param x The enemy's x position.
+	 *@param y The enemy's y position.
+	 *@param imgPath The enemy's image path.
+	 **/
+	public Enemy(double x, double y, String imgPath, int maxShield)
+		throws SlickException {
+			super(x, y, imgPath, maxShield);
+	}
+	/** Update all the enemies.*/
+	public abstract void update(int delta, World world, Camera cam,Player player) throws SlickException;
+}

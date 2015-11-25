@@ -1,0 +1,25 @@
+import org.newdawn.slick.SlickException;
+
+/** Present all the shield*/
+public class Shield extends Item{
+	/** shield image*/
+	private static final String SHIELD_PATH= Game.ASSETS_PATH + "/items/shield.png";
+
+	/** Create a shield object.
+	 * @param x The shield's x position;
+	 * @param y The shield's y position;
+	 * @throws SlickException
+	 */
+	public Shield(double x,double y)
+		throws SlickException{
+			super(x,y,SHIELD_PATH);		
+		}
+	
+	/** Change player's stats.
+	 * @param player Need to call method in the player class
+	 */
+	public void changestuff(Player player){
+		player.changeshield();
+	}	
+	
+}

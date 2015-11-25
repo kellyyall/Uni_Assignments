@@ -1,0 +1,64 @@
+import org.newdawn.slick.Graphics;
+import org.newdawn.slick.Image;
+import org.newdawn.slick.SlickException;
+
+/** Present all the game objects.*/
+public abstract class GameObject {
+	/** Little error on map for the image. */
+	private static final int ERROR_MAP = 1;
+	/** All the GameObject has their own x position. */
+	protected double x;
+	/** All the GameObject has their own y position. */
+	protected double y;
+	/** All the GameObject has their own image. */
+	protected Image sprite;
+	
+    /** Create a GameObject.
+     * @param x The GameObject's x position.
+     * @param y The GameObject's y position.
+     * @param imgPath The GameObject's image path.
+     * @throws SlickException
+     */
+	public GameObject(double x, double y, String imgPath)
+		throws SlickException{
+			this.setX(x);
+			this.setY(y);
+			this.sprite = new Image(imgPath);
+		}
+	
+	/** Render the object on screen. */
+	public void render(Graphics g, Camera cam){		
+		    int screen_x, screen_y;
+	        screen_x = (int) (this.getX() - cam.getLeft());
+	        screen_y = (int) (this.getY() - cam.getTop());	        
+	        this.sprite.drawCentered(screen_x, screen_y);
+	}
+	
+	/** Use halfwidth-1 instead of halfwidth */
+	public double halfWidth(){
+    		return this.sprite.getWidth()/2-ERROR_MAP;
+    }
+	/** Use halfheight-1 instead of halfheight */
+    public double halfHeight(){
+    		return this.sprite.getHeight()/2-ERROR_MAP;
+    }
+    
+    /** X position's getter and setter. */
+	public double getX() {
+			return x;
+	}
+
+	public void setX(double x) {
+			this.x = x;
+	}
+	
+	/** Y position's getter and setter. */
+	public double getY() {
+			return y;
+	}
+
+	public void setY(double y) {
+			this.y = y;
+	}
+
+}
