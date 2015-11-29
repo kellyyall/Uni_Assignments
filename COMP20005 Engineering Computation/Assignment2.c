@@ -1,3 +1,6 @@
+/* COMP20005 Engineering Computation - Assignment 2
+   Written by Kelly Yang*/
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<math.h>
